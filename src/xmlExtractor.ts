@@ -5,7 +5,8 @@ import {SelectedMorphAnalysis, readSelectedMorphology}
   from '../tlh/ui/src/model/selectedMorphologicalAnalysis';
 import {readMorphologicalAnalysis, writeMorphAnalysisValue}
   from '../tlh/ui/src/model/morphologicalAnalysis';
-import {isSelected} from '../tlh/ui/src/xmlEditor/hur/morphologicalAnalysis/auxiliary';
+import {isSelected, convertToSingleIfAppropriate}
+  from '../tlh/ui/src/xmlEditor/hur/morphologicalAnalysis/auxiliary';
 import {add, formIsFragment} from '../tlh/ui/src/xmlEditor/hur/common/utils';
 import {basicSaveGloss} from '../tlh/ui/src/xmlEditor/hur/translations/glossUpdater';
 
@@ -41,9 +42,10 @@ export function extractXml(filename: string, log: Writable, dictionary: Map<stri
                 if (morphologicalAnalysis !== undefined) {
                   if (isSelected(morphologicalAnalysis)) {
                     if (!formIsFragment(morphologicalAnalysis.referenceWord)) {
-                      const value = writeMorphAnalysisValue(morphologicalAnalysis);
+                      const converted = convertToSingleIfAppropriate(morphologicalAnalysis);
+                      const value = writeMorphAnalysisValue(converted);
                       add(dictionary, trans, value);
-                      basicSaveGloss(morphologicalAnalysis);
+                      basicSaveGloss(converted);
                       log.write(`\t\t${trans}\t${mrp0sel}\t${value}\n`);
                     }
                   }

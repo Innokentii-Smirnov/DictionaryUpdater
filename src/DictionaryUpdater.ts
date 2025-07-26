@@ -2,7 +2,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import {extractXml} from './xmlExtractor';
-import {getDictionary} from '../tlh/ui/src/xmlEditor/hur/dict/dictionary';
+import {convertDictionary} from '../tlh/ui/src/xmlEditor/hur/common/utility';
 import {getGlosses} from '../tlh/ui/src/xmlEditor/hur/translations/glossProvider';
 
 const annotatedMarker = '_mit_Annotation';
@@ -15,6 +15,7 @@ const inputDirectory = path.join(documentsDirectory, corpusDirectory);
 const logFile = path.join(langDirectory, logName);
 const log = fs.createWriteStream(logFile, 'utf8');
 const outfile = path.join(langDirectory, outfileName);
+const map = new Map<string, Set<string>>();
 for (const directory of fs.readdirSync(inputDirectory, {withFileTypes: true})) {
   if (directory.isDirectory() && directory.name.endsWith(annotatedMarker)) {
   log.write(directory.name + '\n');
@@ -25,13 +26,13 @@ for (const directory of fs.readdirSync(inputDirectory, {withFileTypes: true})) {
         if (parsedName.ext === '.xml') {
           log.write('\t' + parsedName.name + '\n');
           const fullname = path.join(fullDirectoryPath, file.name);
-          extractXml(fullname, log);
+          extractXml(fullname, log, map);
         }
       }
     }
   }
 }
-const dictionary = getDictionary();
+const dictionary = convertDictionary(map);
 const glosses = getGlosses();
 const obj = {dictionary, glosses};
 const jsonText = JSON.stringify(obj, undefined, '\t');

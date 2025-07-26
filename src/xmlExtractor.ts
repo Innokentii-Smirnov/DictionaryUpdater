@@ -6,10 +6,10 @@ import {SelectedMorphAnalysis, readSelectedMorphology}
 import {readMorphologicalAnalysis, writeMorphAnalysisValue}
   from '../tlh/ui/src/model/morphologicalAnalysis';
 import {isSelected} from '../tlh/ui/src/xmlEditor/hur/morphologicalAnalysis/auxiliary';
-import {basicUpdateHurrianDictionary} from '../tlh/ui/src/xmlEditor/hur/dict/dictionary';
+import {add, formIsFragment} from '../tlh/ui/src/xmlEditor/hur/common/utils';
 import {basicSaveGloss} from '../tlh/ui/src/xmlEditor/hur/translations/glossUpdater';
 
-export function extractXml(filename: string, log: Writable) {
+export function extractXml(filename: string, log: Writable, dictionary: Map<string, Set<string>>) {
   const fileText = fs.readFileSync(filename, 'utf8');
   const dom = new jsdom.JSDOM(fileText, {contentType: 'text/xml'});
   const text = dom.window.document.getElementsByTagName('text')[0];
@@ -40,16 +40,18 @@ export function extractXml(filename: string, log: Writable) {
                 );
                 if (morphologicalAnalysis !== undefined) {
                   if (isSelected(morphologicalAnalysis)) {
-                    const value = writeMorphAnalysisValue(morphologicalAnalysis);
-                    basicUpdateHurrianDictionary(trans, value);
-                    basicSaveGloss(morphologicalAnalysis);
-                    //log.write(`\t\t${trans}\t${mrp0sel}\t${value}\n`);
+                    if (!formIsFragment(morphologicalAnalysis.referenceWord)) {
+                      const value = writeMorphAnalysisValue(morphologicalAnalysis);
+                      add(dictionary, trans, value);
+                      basicSaveGloss(morphologicalAnalysis);
+                      log.write(`\t\t${trans}\t${mrp0sel}\t${value}\n`);
+                    }
                   }
                 }
               }
             }
           } else {
-            log.write(`\t\t${lnr}\t${child.innerHTML}\n`);
+            //log.write(`\t\t${lnr}\t${child.innerHTML}\n`);
           }
         }
         break;
